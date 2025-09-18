@@ -1,72 +1,83 @@
 #include <stdio.h>
-#include <stdbool.h>
 
-#define TAMANHO 10   // Tamanho do tabuleiro
-#define TAM_NAVIO 3  // Tamanho fixo dos navios
+#define TAM 10  // Tamanho do tabuleiro
+#define NAVIO 3 // Valor representando navio
 
-int main() {
-    int tabuleiro[TAMANHO][TAMANHO];
-    int i, j;
-
-    // Inicializa todo o tabuleiro com 0 (água)
-    for (i = 0; i < TAMANHO; i++) {
-        for (j = 0; j < TAMANHO; j++) {
+// Inicializa o tabuleiro com 0 (água)
+void inicializarTabuleiro(int tabuleiro[TAM][TAM]) {
+    for (int i = 0; i < TAM; i++) {
+        for (int j = 0; j < TAM; j++) {
             tabuleiro[i][j] = 0;
         }
     }
+}
 
-    // Coordenadas iniciais definidas no código
-    // Navio 1 (horizontal)
-    int linhaNavio1 = 2;  // linha inicial
-    int colunaNavio1 = 4; // coluna inicial
+// Retorna 1 (pode colocar) ou 0 (não pode colocar)
+int podeColocar(int tabuleiro[TAM][TAM], int linha, int coluna, int tamanho, char orientacao) {
+    // orientacao: 'H' horizontal, 'V' vertical, 'D' diagonal descendo, 'A' diagonal subindo
+    for (int i = 0; i < tamanho; i++) {
+        int l = linha;
+        int c = coluna;
+        if (orientacao == 'H') c += i;           // Horizontal
+        else if (orientacao == 'V') l += i;      // Vertical
+        else if (orientacao == 'D') { l += i; c += i; } // Diagonal descendo
+        else if (orientacao == 'A') { l += i; c -= i; } // Diagonal subindo
 
-    // Navio 2 (vertical)
-    int linhaNavio2 = 5;  // linha inicial
-    int colunaNavio2 = 7; // coluna inicial
+        // Fora dos limites
+        if (l < 0 || l >= TAM || c < 0 || c >= TAM)
+            return 0;
 
-    // Validação para navio horizontal caber no tabuleiro
-    if (colunaNavio1 + TAM_NAVIO > TAMANHO) {
-        printf("Erro: Navio 1 (horizontal) não cabe no tabuleiro.\n");
-        return 1;
+        // Sobreposição
+        if (tabuleiro[l][c] != 0)
+            return 0;
     }
+    return 1;
+}
 
-    // Validação para navio vertical caber no tabuleiro
-    if (linhaNavio2 + TAM_NAVIO > TAMANHO) {
-        printf("Erro: Navio 2 (vertical) não cabe no tabuleiro.\n");
-        return 1;
+// Coloca o navio no tabuleiro
+void colocarNavio(int tabuleiro[TAM][TAM], int linha, int coluna, int tamanho, char orientacao) {
+    for (int i = 0; i < tamanho; i++) {
+        int l = linha;
+        int c = coluna;
+        if (orientacao == 'H') c += i;
+        else if (orientacao == 'V') l += i;
+        else if (orientacao == 'D') { l += i; c += i; }
+        else if (orientacao == 'A') { l += i; c -= i; }
+        tabuleiro[l][c] = NAVIO;
     }
+}
 
-    // Validação de sobreposição simples
-    // Primeiro posiciona Navio 1 (horizontal)
-    for (j = 0; j < TAM_NAVIO; j++) {
-        tabuleiro[linhaNavio1][colunaNavio1 + j] = 3;
-    }
-
-    // Antes de posicionar Navio 2 (vertical), checa se já há um navio
-    bool sobreposicao = false;
-    for (i = 0; i < TAM_NAVIO; i++) {
-        if (tabuleiro[linhaNavio2 + i][colunaNavio2] == 3) {
-            sobreposicao = true;
-        }
-    }
-
-    if (sobreposicao) {
-        printf("Erro: Navio 2 (vertical) se sobrepõe ao Navio 1.\n");
-        return 1;
-    }
-
-    // Se não há sobreposição, posiciona Navio 2 (vertical)
-    for (i = 0; i < TAM_NAVIO; i++) {
-        tabuleiro[linhaNavio2 + i][colunaNavio2] = 3;
-    }
-
-    // Exibe o tabuleiro completo
-    printf("\nTabuleiro Batalha Naval:\n");
-    for (i = 0; i < TAMANHO; i++) {
-        for (j = 0; j < TAMANHO; j++) {
-            printf("%d ", tabuleiro[i][j]);
+// Exibe o tabuleiro formatado
+void exibirTabuleiro(int tabuleiro[TAM][TAM]) {
+    printf("\nTabuleiro:\n\n");
+    for (int i = 0; i < TAM; i++) {
+        for (int j = 0; j < TAM; j++) {
+            printf("%2d ", tabuleiro[i][j]);
         }
         printf("\n");
     }
+}
 
+int main() {
+    int tabuleiro[TAM][TAM];
+    inicializarTabuleiro(tabuleiro);
+
+    int tamanhoNavio = 4; // tamanho fixo para exemplo
+
+    // Dois navios normais
+    if (podeColocar(tabuleiro, 0, 0, tamanhoNavio, 'H'))
+        colocarNavio(tabuleiro, 0, 0, tamanhoNavio, 'H');
+
+    if (podeColocar(tabuleiro, 2, 5, tamanhoNavio, 'V'))
+        colocarNavio(tabuleiro, 2, 5, tamanhoNavio, 'V');
+
+    // Dois navios diagonais
+    if (podeColocar(tabuleiro, 5, 0, tamanhoNavio, 'D'))
+        colocarNavio(tabuleiro, 5, 0, tamanhoNavio, 'D');
+
+    if (podeColocar(tabuleiro, 0, 9, tamanhoNavio, 'A'))
+        colocarNavio(tabuleiro, 0, 9, tamanhoNavio, 'A');
+
+    exibirTabuleiro(tabuleiro);
     return 0;
+}
